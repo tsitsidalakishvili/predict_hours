@@ -1,0 +1,10 @@
+streamlit==1.10.0
+pandas
+numpy
+nltk
+tensorflow
+plotly
+emoji
+scikit-learn
+matplotlib
+seaborn

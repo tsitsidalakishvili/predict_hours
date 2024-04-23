@@ -203,6 +203,52 @@ if uploaded_file is not None:
 
 
 
+        # Predictions
+        y_pred = model.predict([X_test_text, X_test_numeric])
+        st.session_state.predictions = y_pred
+
+    # Display results if the model, history, and predictions are present
+    if 'model' in st.session_state and 'history' in st.session_state and 'predictions' in st.session_state:
+        test_data_with_predictions = data.iloc[indices[train_samples:]].copy()
+        test_data_with_predictions['Predicted'] = st.session_state.predictions.flatten()
+        test_data_with_predictions['Actual'] = y_test
+
+        results_df = test_data_with_predictions[prediction_columns + ['Actual', 'Predicted']]
+        
+        st.header('Actual vs. Predicted Values')
+        st.dataframe(results_df)
+    
+        # Plotting
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Loss plot
+            fig_loss = go.Figure()
+            fig_loss.add_trace(go.Scatter(y=epoch_loss, mode='lines', name='Training Loss'))
+            fig_loss.add_trace(go.Scatter(y=epoch_val_loss, mode='lines', name='Validation Loss'))
+            fig_loss.update_layout(title='Learning Curve', xaxis_title='Epochs', yaxis_title='Loss')
+            st.plotly_chart(fig_loss)
+
+            # Residuals plot
+            residuals = y_test - st.session_state.predictions.flatten()
+            fig_residuals = go.Figure()
+            fig_residuals.add_trace(go.Scatter(x=st.session_state.predictions.flatten(), y=residuals, mode='markers'))
+            fig_residuals.update_layout(title='Residuals Plot', xaxis_title='Predicted Values', yaxis_title='Residuals')
+            st.plotly_chart(fig_residuals)
+
+        with col2:
+            # Prediction accuracy plot
+            fig_results = go.Figure()
+            fig_results.add_trace(go.Scatter(x=results_df.index, y=results_df['Actual'], mode='lines', name='Actual'))
+            fig_results.add_trace(go.Scatter(x=results_df.index, y=results_df['Predicted'], mode='lines', name='Predicted'))
+            fig_results.update_layout(title='Actual vs. Predicted Values', xaxis_title='Index', yaxis_title='Value')
+            st.plotly_chart(fig_results)
+
+            # MAE plot
+            fig_mae = go.Figure()
+            fig_mae.add_trace(go.Scatter(y=epoch_val_mae, mode='lines', name='Validation MAE'))
+            fig_mae.update_layout(title='Mean Absolute Error Over Epochs', xaxis_title='Epochs', yaxis_title='MAE')
+            st.plotly_chart(fig_mae)
 
 
 
